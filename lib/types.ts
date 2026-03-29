@@ -119,6 +119,25 @@ export type SuggestionPreview = {
   diff: SuggestionDiffEntry[];
 };
 
+export type SuggestionReviewMessageRole = "system" | "user" | "assistant";
+
+export type SuggestionReviewMessage = {
+  id: number;
+  suggestionId: string;
+  role: SuggestionReviewMessageRole;
+  content: string;
+  model: string | null;
+  proposedPayloadText: string | null;
+  createdAt: string;
+};
+
+export type SuggestionReviewThread = {
+  suggestionId: string;
+  selectedModel: string;
+  availableModels: string[];
+  messages: SuggestionReviewMessage[];
+};
+
 export type SuggestionHistoryEntry = {
   id: number;
   suggestionId: string;

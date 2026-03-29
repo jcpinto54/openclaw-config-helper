@@ -249,6 +249,51 @@ export const getInstalledSkills = async () => {
   return (((config.skills as Record<string, unknown> | undefined)?.installed ?? []) as string[]) || [];
 };
 
+export const getAvailableModels = async () => {
+  const config = await loadConfig();
+  const modelConfig = (config.models ?? {}) as Record<string, unknown>;
+  const discovered = new Set<string>();
+
+  for (const [provider, value] of Object.entries(modelConfig)) {
+    if (!value || typeof value !== "object") {
+      continue;
+    }
+
+    const record = value as Record<string, unknown>;
+    const modelName = typeof record.model === "string" ? record.model : null;
+    const fallback = typeof record.fallback === "string" ? record.fallback : null;
+
+    if (modelName) {
+      discovered.add(modelName.includes("/") ? modelName : `${provider}/${modelName}`);
+    }
+
+    if (fallback) {
+      discovered.add(fallback);
+    }
+  }
+
+  const agentList =
+    ((((config.agents as Record<string, unknown> | undefined)?.list ?? []) as Array<Record<string, unknown>>) ??
+      []) || [];
+
+  for (const agent of agentList) {
+    if (typeof agent.model === "string") {
+      discovered.add(agent.model);
+    }
+
+    const heartbeatModel =
+      typeof (agent.heartbeat as Record<string, unknown> | undefined)?.model === "string"
+        ? String((agent.heartbeat as Record<string, unknown>).model)
+        : null;
+
+    if (heartbeatModel) {
+      discovered.add(heartbeatModel);
+    }
+  }
+
+  return Array.from(discovered);
+};
+
 export const getActiveChannels = async () => {
   const config = await loadConfig();
   const channels = (config.channels ?? {}) as Record<string, unknown>;

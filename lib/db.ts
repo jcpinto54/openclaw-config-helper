@@ -36,6 +36,23 @@ const initialize = (db: Database.Database) => {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS suggestion_review_threads (
+      suggestion_id TEXT PRIMARY KEY,
+      selected_model TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS suggestion_review_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      suggestion_id TEXT NOT NULL,
+      role TEXT NOT NULL,
+      content TEXT NOT NULL,
+      model TEXT,
+      proposed_payload_text TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS audit_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       finding_id TEXT NOT NULL,
