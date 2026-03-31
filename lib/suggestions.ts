@@ -29,6 +29,19 @@ type SuggestionsDocument = {
   suggestions: Array<Omit<Suggestion, "status"> & { status?: SuggestionStatus }>;
 };
 
+const createEmptySuggestionsDocument = (): SuggestionsDocument => ({
+  timestamp: nowIso(),
+  suggestions: [],
+});
+
+const isMissingFileError = (unknownError: unknown) => {
+  const errorMessage =
+    unknownError instanceof Error ? unknownError.message : String(unknownError ?? "");
+  return (
+    errorMessage.includes("ENOENT") || errorMessage.includes("No such file or directory")
+  );
+};
+
 const latestStatuses = () => {
   const activity = getDb()
     .prepare(
@@ -47,8 +60,18 @@ const latestStatuses = () => {
 };
 
 const loadSuggestionsDocument = async (): Promise<SuggestionsDocument> => {
-  const raw = await readRemoteFile("suggestions");
-  return JSON.parse(raw) as SuggestionsDocument;
+  try {
+    const raw = await readRemoteFile("suggestions");
+    return JSON.parse(raw) as SuggestionsDocument;
+  } catch (unknownError) {
+    if (!isMissingFileError(unknownError)) {
+      throw unknownError;
+    }
+
+    const emptyDocument = createEmptySuggestionsDocument();
+    await saveSuggestionsDocument(emptyDocument);
+    return emptyDocument;
+  }
 };
 
 const saveSuggestionsDocument = async (document: SuggestionsDocument) => {
