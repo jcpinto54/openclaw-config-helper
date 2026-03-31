@@ -31,23 +31,27 @@ export function CredentialsPanel({
     <div className="space-y-6">
       <Panel>
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl bg-rose-50 p-4">
-            <p className="text-sm font-medium text-rose-700">Plaintext credentials</p>
-            <p className="mt-2 text-3xl font-semibold text-rose-950">{plaintext.length}</p>
+          <div className="rounded-2xl bg-[var(--brand-coral-soft)] p-4">
+            <p className="text-sm font-medium text-[var(--brand-coral-strong)]">Plaintext credentials</p>
+            <p className="mt-2 text-3xl font-semibold text-[var(--brand-text-primary)]">
+              {plaintext.length}
+            </p>
           </div>
-          <div className="rounded-2xl bg-emerald-50 p-4">
-            <p className="text-sm font-medium text-emerald-700">Already secured</p>
-            <p className="mt-2 text-3xl font-semibold text-emerald-950">{secured.length}</p>
+          <div className="rounded-2xl bg-[var(--brand-cyan-soft)] p-4">
+            <p className="text-sm font-medium text-[var(--brand-cyan-strong)]">Already secured</p>
+            <p className="mt-2 text-3xl font-semibold text-[var(--brand-text-primary)]">
+              {secured.length}
+            </p>
           </div>
         </div>
-        {message ? <p className="mt-4 text-sm text-slate-600">{message}</p> : null}
+        {message ? <p className="mt-4 text-sm text-[var(--brand-text-secondary)]">{message}</p> : null}
       </Panel>
 
       {Object.entries(grouped).map(([group, items]) => (
         <Panel key={group}>
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-slate-950">{group}</h3>
-            <p className="text-sm text-slate-600">
+            <h3 className="text-lg font-semibold text-[var(--brand-text-primary)]">{group}</h3>
+            <p className="text-sm text-[var(--brand-text-secondary)]">
               Suggested migrations are prefilled with SecretRef environment references.
             </p>
           </div>
@@ -58,16 +62,18 @@ export function CredentialsPanel({
               const refId = refIds[finding.credentialId] ?? finding.suggestedRefId;
 
               return (
-                <div key={finding.credentialId} className="rounded-2xl border border-slate-200 p-4">
+                <div key={finding.credentialId} className="rounded-2xl border border-[var(--brand-border)] p-4">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <h4 className="font-semibold text-slate-950">{finding.keyPath}</h4>
-                        <p className="text-sm text-slate-500">
+                        <h4 className="font-semibold text-[var(--brand-text-primary)]">
+                          {finding.keyPath}
+                        </h4>
+                        <p className="text-sm text-[var(--brand-text-muted)]">
                           Current value: {finding.currentValuePreview}
                         </p>
                       </div>
-                      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold uppercase text-amber-800">
+                      <span className="rounded-full bg-[var(--brand-surface-muted)] px-2.5 py-1 text-xs font-semibold uppercase text-[var(--brand-text-secondary)]">
                         {finding.currentState}
                       </span>
                     </div>
@@ -81,7 +87,7 @@ export function CredentialsPanel({
                             [finding.credentialId]: event.target.value as CredentialProvider,
                           }))
                         }
-                        className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                        className="rounded-xl border border-[var(--brand-border)] bg-[var(--brand-surface-strong)] px-3 py-2 text-sm text-[var(--brand-text-primary)]"
                       >
                         <option value="env">$env</option>
                         <option value="file">$file</option>
@@ -95,12 +101,12 @@ export function CredentialsPanel({
                             [finding.credentialId]: event.target.value,
                           }))
                         }
-                        className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                        className="rounded-xl border border-[var(--brand-border)] bg-[var(--brand-surface-strong)] px-3 py-2 text-sm text-[var(--brand-text-primary)]"
                       />
                       <button
                         type="button"
                         disabled={busy === finding.credentialId}
-                        className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-300"
+                        className="rounded-xl bg-[var(--brand-coral)] px-4 py-2 text-sm font-semibold text-white disabled:bg-[var(--brand-surface-muted)]"
                         onClick={async () => {
                           setBusy(finding.credentialId);
                           setMessage(null);
@@ -131,7 +137,7 @@ export function CredentialsPanel({
                       </button>
                     </div>
 
-                    <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+                    <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--brand-text-secondary)]">
                       {finding.migrationSteps.map((step) => (
                         <li key={step}>{step}</li>
                       ))}
@@ -146,12 +152,19 @@ export function CredentialsPanel({
 
       {secured.length > 0 ? (
         <Panel>
-          <h3 className="text-lg font-semibold text-slate-950">Already secured references</h3>
+          <h3 className="text-lg font-semibold text-[var(--brand-text-primary)]">
+            Already secured references
+          </h3>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {secured.map((entry) => (
-              <div key={entry.keyPath} className="rounded-xl border border-slate-200 p-3 text-sm">
-                <p className="font-medium text-slate-900">{entry.keyPath}</p>
-                <p className="mt-1 font-mono text-xs text-slate-500">{entry.valuePreview}</p>
+              <div
+                key={entry.keyPath}
+                className="rounded-xl border border-[var(--brand-border)] p-3 text-sm"
+              >
+                <p className="font-medium text-[var(--brand-text-primary)]">{entry.keyPath}</p>
+                <p className="mt-1 font-mono text-xs text-[var(--brand-text-muted)]">
+                  {entry.valuePreview}
+                </p>
               </div>
             ))}
           </div>

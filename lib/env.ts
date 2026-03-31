@@ -6,8 +6,24 @@ const boolFromEnv = (value: string | undefined, defaultValue: boolean) => {
   return value.toLowerCase() !== "false";
 };
 
+export type OpenClawAccessMode = "mock" | "local" | "ssh";
+
+const parseAccessMode = (value: string | undefined): OpenClawAccessMode | null => {
+  const normalized = value?.trim().toLowerCase();
+
+  switch (normalized) {
+    case "mock":
+    case "local":
+    case "ssh":
+      return normalized;
+    default:
+      return null;
+  }
+};
+
 export const env = {
   mockMode: boolFromEnv(process.env.MOCK_MODE, true),
+  configuredAccessMode: parseAccessMode(process.env.OPENCLAW_ACCESS_MODE),
   sshHost: process.env.SSH_HOST ?? "",
   sshUser: process.env.SSH_USER ?? "",
   sshKeyPath: process.env.SSH_KEY_PATH ?? "",
@@ -33,3 +49,6 @@ export const env = {
 
 export const hasSshConfig =
   Boolean(env.sshHost) && Boolean(env.sshUser) && Boolean(env.sshKeyPath);
+
+export const accessMode: OpenClawAccessMode =
+  env.configuredAccessMode ?? (env.mockMode ? "mock" : hasSshConfig ? "ssh" : "mock");

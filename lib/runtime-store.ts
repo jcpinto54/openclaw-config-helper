@@ -1,7 +1,10 @@
+import { exec as execCallback } from "node:child_process";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
+import { promisify } from "node:util";
 
-import { env, hasSshConfig } from "@/lib/env";
+import { accessMode, env, hasSshConfig } from "@/lib/env";
 import { ensureDir } from "@/lib/server-utils";
 import { getSshBridge } from "@/lib/ssh-bridge";
 import { nowIso, quoteShell } from "@/lib/utils";
@@ -15,6 +18,7 @@ export type RemoteFileKind =
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const MOCK_REMOTE_DIR = path.join(DATA_DIR, "mock-remote");
+const execLocalShell = promisify(execCallback);
 
 const DEFAULT_CONFIG = {
   gateway: {
@@ -209,13 +213,13 @@ const seedFiles = async () => {
 };
 
 export const ensureRuntimeData = async () => {
-  if (env.mockMode || !hasSshConfig) {
+  if (accessMode === "mock") {
     await seedFiles();
   }
 };
 
 export const getResolvedPath = (kind: RemoteFileKind) => {
-  if (env.mockMode || !hasSshConfig) {
+  if (accessMode === "mock") {
     return localPaths[kind];
   }
 
@@ -233,35 +237,81 @@ export const getResolvedPath = (kind: RemoteFileKind) => {
   }
 };
 
+const getLocalPath = (kind: RemoteFileKind) => {
+  const resolvedPath = getResolvedPath(kind);
+
+  if (resolvedPath === "~") {
+    return os.homedir();
+  }
+
+  if (resolvedPath.startsWith("~/")) {
+    return path.join(os.homedir(), resolvedPath.slice(2));
+  }
+
+  return resolvedPath;
+};
+
+const ensureSshConfig = () => {
+  if (accessMode === "ssh" && !hasSshConfig) {
+    throw new Error("OPENCLAW_ACCESS_MODE=ssh requires SSH_HOST, SSH_USER, and SSH_KEY_PATH.");
+  }
+};
+
+const execLocalCommand = async (command: string) => {
+  try {
+    const { stdout, stderr } = await execLocalShell(command, {
+      shell: "/bin/bash",
+    });
+    return { stdout, stderr };
+  } catch (error) {
+    const execError = error as Error & {
+      stdout?: string;
+      stderr?: string;
+    };
+
+    return {
+      stdout: execError.stdout ?? "",
+      stderr: execError.stderr ?? execError.message,
+    };
+  }
+};
+
 export const readRemoteFile = async (kind: RemoteFileKind) => {
   await ensureRuntimeData();
 
-  if (env.mockMode || !hasSshConfig) {
-    return fs.readFile(localPaths[kind], "utf8");
+  if (accessMode !== "ssh") {
+    return fs.readFile(getLocalPath(kind), "utf8");
   }
 
+  ensureSshConfig();
   return getSshBridge().readFile(getResolvedPath(kind));
 };
 
 export const writeRemoteFile = async (kind: RemoteFileKind, content: string) => {
   await ensureRuntimeData();
 
-  if (env.mockMode || !hasSshConfig) {
-    await fs.writeFile(localPaths[kind], content, "utf8");
+  if (accessMode !== "ssh") {
+    const localPath = getLocalPath(kind);
+    await ensureDir(path.dirname(localPath));
+    await fs.writeFile(localPath, content, "utf8");
     return;
   }
 
+  ensureSshConfig();
   await getSshBridge().writeFile(getResolvedPath(kind), content);
 };
 
 export const appendRemoteFile = async (kind: RemoteFileKind, content: string) => {
   await ensureRuntimeData();
 
-  if (env.mockMode || !hasSshConfig) {
-    await fs.appendFile(localPaths[kind], content, "utf8");
+  if (accessMode !== "ssh") {
+    const localPath = getLocalPath(kind);
+    await ensureDir(path.dirname(localPath));
+    await fs.appendFile(localPath, content, "utf8");
     return;
   }
 
+  ensureSshConfig();
   const bridge = getSshBridge();
   const encoded = Buffer.from(content, "utf8").toString("base64");
   await bridge.execCommand(
@@ -272,11 +322,12 @@ export const appendRemoteFile = async (kind: RemoteFileKind, content: string) =>
 export const getConfigPermissions = async () => {
   await ensureRuntimeData();
 
-  if (env.mockMode || !hasSshConfig) {
-    const stat = await fs.stat(localPaths.config);
+  if (accessMode !== "ssh") {
+    const stat = await fs.stat(getLocalPath("config"));
     return stat.mode & 0o777;
   }
 
+  ensureSshConfig();
   const { stdout } = await getSshBridge().execCommand(
     `python3 - <<'PY'\nfrom pathlib import Path\nprint(oct(Path(${quoteShell(getResolvedPath("config"))}).expanduser().stat().st_mode & 0o777))\nPY`,
   );
@@ -286,23 +337,28 @@ export const getConfigPermissions = async () => {
 export const execRemoteCommand = async (command: string) => {
   await ensureRuntimeData();
 
-  if (!(env.mockMode || !hasSshConfig)) {
+  if (accessMode === "ssh") {
+    ensureSshConfig();
     return getSshBridge().execCommand(command);
   }
 
+  if (accessMode === "local") {
+    return execLocalCommand(command);
+  }
+
   if (command.includes("chmod 600")) {
-    await fs.chmod(localPaths.config, 0o600);
+    await fs.chmod(getLocalPath("config"), 0o600);
     return { stdout: "permissions updated", stderr: "" };
   }
 
   if (command.includes("openclaw system event")) {
-    const current = JSON.parse(await fs.readFile(localPaths.suggestions, "utf8")) as {
+    const current = JSON.parse(await fs.readFile(getLocalPath("suggestions"), "utf8")) as {
       timestamp: string;
       suggestions: unknown[];
     };
 
     current.timestamp = nowIso();
-    await fs.writeFile(localPaths.suggestions, `${JSON.stringify(current, null, 2)}\n`, "utf8");
+    await fs.writeFile(getLocalPath("suggestions"), `${JSON.stringify(current, null, 2)}\n`, "utf8");
     return { stdout: "mock refresh triggered", stderr: "" };
   }
 

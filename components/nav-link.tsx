@@ -15,8 +15,8 @@ export function NavLink({ href, label }: { href: string; label: string }) {
       className={cn(
         "rounded-lg px-3 py-2 text-sm font-medium transition",
         active
-          ? "bg-slate-900 text-white shadow-sm"
-          : "text-slate-600 hover:bg-slate-200 hover:text-slate-900",
+          ? "bg-[var(--brand-coral)] text-white shadow-sm"
+          : "text-[var(--brand-text-secondary)] hover:bg-[var(--brand-surface-muted)] hover:text-[var(--brand-text-primary)]",
       )}
     >
       {label}

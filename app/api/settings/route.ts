@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { jsonError } from "@/lib/api-responses";
-import { env, hasSshConfig } from "@/lib/env";
+import { accessMode, env } from "@/lib/env";
 import { getAppSettings, updateAppSettings } from "@/lib/settings";
 import type { AppSettings } from "@/lib/types";
 
@@ -12,7 +12,7 @@ export async function GET() {
     return NextResponse.json({
       settings: getAppSettings(),
       connection: {
-        mode: env.mockMode || !hasSshConfig ? "mock" : "ssh",
+        accessMode,
         sshHost: env.sshHost || null,
         sshUser: env.sshUser || null,
         hasGatewayToken: Boolean(env.gatewayToken),

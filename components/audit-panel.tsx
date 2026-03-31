@@ -35,12 +35,16 @@ export function AuditPanel({
       <Panel>
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-slate-950">Latest audit snapshot</h3>
-            <p className="text-sm text-slate-600">Updated at {new Date(timestamp).toLocaleString()}.</p>
+            <h3 className="text-lg font-semibold text-[var(--brand-text-primary)]">
+              Latest audit snapshot
+            </h3>
+            <p className="text-sm text-[var(--brand-text-secondary)]">
+              Updated at {new Date(timestamp).toLocaleString()}.
+            </p>
           </div>
           <button
             type="button"
-            className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+            className="rounded-xl bg-[var(--brand-coral)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-coral-strong)]"
             onClick={async () => {
               setBusyId("run");
               setMessage(null);
@@ -58,7 +62,7 @@ export function AuditPanel({
             {busyId === "run" ? "Refreshing..." : "Run Audit"}
           </button>
         </div>
-        {message ? <p className="mt-3 text-sm text-slate-600">{message}</p> : null}
+        {message ? <p className="mt-3 text-sm text-[var(--brand-text-secondary)]">{message}</p> : null}
       </Panel>
 
       <div className="grid gap-4">
@@ -67,16 +71,20 @@ export function AuditPanel({
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="text-lg font-semibold text-slate-950">{finding.title}</h3>
+                  <h3 className="text-lg font-semibold text-[var(--brand-text-primary)]">
+                    {finding.title}
+                  </h3>
                   <StatusBadge status={finding.status === "pending" ? "warning" : finding.status} />
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase text-slate-600">
+                  <span className="rounded-full bg-[var(--brand-surface-muted)] px-2.5 py-1 text-xs font-semibold uppercase text-[var(--brand-text-secondary)]">
                     {finding.severity}
                   </span>
                 </div>
-                <p className="text-sm text-slate-600">{finding.description}</p>
-                <p className="text-sm text-slate-500">Current state: {finding.currentState}</p>
+                <p className="text-sm text-[var(--brand-text-secondary)]">{finding.description}</p>
+                <p className="text-sm text-[var(--brand-text-muted)]">
+                  Current state: {finding.currentState}
+                </p>
                 {finding.fixPayload?.expectedOutcome ? (
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-[var(--brand-text-muted)]">
                     Expected outcome: {finding.fixPayload.expectedOutcome}
                   </p>
                 ) : null}
@@ -85,7 +93,7 @@ export function AuditPanel({
                 <button
                   type="button"
                   disabled={busyId === finding.findingId || finding.fixType !== "auto"}
-                  className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="rounded-lg bg-[var(--brand-cyan)] px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[var(--brand-surface-muted)]"
                   onClick={async () => {
                     setBusyId(finding.findingId);
                     setMessage(null);
@@ -104,7 +112,7 @@ export function AuditPanel({
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                  className="rounded-lg border border-[var(--brand-border)] px-3 py-2 text-sm font-semibold text-[var(--brand-text-secondary)] hover:bg-[var(--brand-surface-muted)]"
                   onClick={async () => {
                     setBusyId(`dismiss-${finding.findingId}`);
                     setMessage(null);

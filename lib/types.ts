@@ -150,7 +150,8 @@ export type SuggestionHistoryEntry = {
 
 export type GatewayStatus = {
   status: "running" | "degraded" | "offline";
-  mode: "mock" | "ssh" | "gateway";
+  accessMode: "mock" | "local" | "ssh";
+  gatewayConnected: boolean;
   hash: string;
   model: string;
   agents: string[];

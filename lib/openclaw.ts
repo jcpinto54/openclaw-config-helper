@@ -1,5 +1,5 @@
 import { getDb } from "@/lib/db";
-import { env } from "@/lib/env";
+import { accessMode, env } from "@/lib/env";
 import { readRemoteFile, writeRemoteFile } from "@/lib/runtime-store";
 import type {
   ConfigRecord,
@@ -320,7 +320,8 @@ export const getGatewayStatus = async (): Promise<GatewayStatus> => {
 
   return {
     status: gateway.bind === "0.0.0.0" ? "degraded" : "running",
-    mode: env.mockMode ? "mock" : env.gatewayToken ? "gateway" : "ssh",
+    accessMode,
+    gatewayConnected: Boolean(env.gatewayToken && accessMode !== "mock"),
     hash: await getConfigHash(),
     model,
     agents: agents.map((agent) => String(agent.id)),

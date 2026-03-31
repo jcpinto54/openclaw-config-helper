@@ -21,13 +21,15 @@ export function SetupWizard() {
   const [message, setMessage] = useState<string | null>(null);
 
   return (
-    <Panel className="border-sky-200 bg-sky-50">
+    <Panel className="border-[var(--brand-border-strong)] bg-[var(--brand-coral-soft)]">
       <div className="mb-5">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--brand-coral-strong)]">
           First-time setup
         </p>
-        <h3 className="mt-2 text-xl font-semibold text-slate-950">Suggestions wizard</h3>
-        <p className="mt-2 max-w-3xl text-sm text-slate-700">
+        <h3 className="mt-2 text-xl font-semibold text-[var(--brand-text-primary)]">
+          Suggestions wizard
+        </h3>
+        <p className="mt-2 max-w-3xl text-sm text-[var(--brand-text-secondary)]">
           These answers become the starting heartbeat prompt for the autonomous suggestions
           agent and seed the current setup snapshot.
         </p>
@@ -42,7 +44,9 @@ export function SetupWizard() {
           ["hardLimits", "Hard limits or off-limits domains"],
         ].map(([key, label]) => (
           <label key={key} className={key === "hardLimits" ? "md:col-span-2" : ""}>
-            <span className="mb-2 block text-sm font-medium text-slate-700">{label}</span>
+            <span className="mb-2 block text-sm font-medium text-[var(--brand-text-secondary)]">
+              {label}
+            </span>
             <input
               value={form[key as keyof SetupAnswers]}
               onChange={(event) =>
@@ -51,7 +55,7 @@ export function SetupWizard() {
                   [key]: event.target.value,
                 }))
               }
-              className="w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-sky-400"
+              className="w-full rounded-xl border border-[var(--brand-border)] bg-[var(--brand-surface-strong)] px-4 py-3 text-sm text-[var(--brand-text-primary)] outline-none focus:border-[var(--brand-coral)]"
             />
           </label>
         ))}
@@ -61,7 +65,7 @@ export function SetupWizard() {
         <button
           type="button"
           disabled={saving}
-          className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white disabled:bg-slate-300"
+          className="rounded-xl bg-[var(--brand-coral)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-coral-strong)] disabled:bg-[var(--brand-surface-muted)]"
           onClick={async () => {
             setSaving(true);
             setMessage(null);
@@ -86,7 +90,7 @@ export function SetupWizard() {
         >
           {saving ? "Saving..." : "Complete Setup"}
         </button>
-        {message ? <p className="text-sm text-slate-700">{message}</p> : null}
+        {message ? <p className="text-sm text-[var(--brand-text-secondary)]">{message}</p> : null}
       </div>
     </Panel>
   );

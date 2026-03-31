@@ -12,7 +12,7 @@ A [Next.js](https://nextjs.org/) web app for managing and inspecting [OpenClaw](
 ## Requirements
 
 - Node.js compatible with the versions in `package.json` (Node 20+ is a safe default for Next 16).
-- Network path to your OpenClaw gateway host when not using mock mode (SSH and optional gateway token).
+- Network path to your OpenClaw gateway host when using SSH access mode (and optional gateway token).
 
 ## Setup
 
@@ -30,7 +30,14 @@ A [Next.js](https://nextjs.org/) web app for managing and inspecting [OpenClaw](
    cp .env.example .env
    ```
 
-   See `.env.example` for `MOCK_MODE`, SSH settings, gateway token, OpenClaw paths, and `WEBAPP_SECRET`. **Treat `.env` as secret**; it is gitignored.
+   See `.env.example` for `MOCK_MODE`, `OPENCLAW_ACCESS_MODE`, SSH settings, gateway token, OpenClaw paths, and `WEBAPP_SECRET`. **Treat `.env` as secret**; it is gitignored.
+
+   - `OPENCLAW_ACCESS_MODE=mock` uses seeded local demo data.
+   - `OPENCLAW_ACCESS_MODE=local` reads the real OpenClaw files directly from the same machine.
+   - `OPENCLAW_ACCESS_MODE=ssh` reads the real OpenClaw files over SSH using `SSH_HOST`, `SSH_USER`, and `SSH_KEY_PATH`.
+
+   **Gateway Connection (Optional):**
+   - Setting `OPENCLAW_GATEWAY_TOKEN` enables a live WebSocket connection to the OpenClaw daemon. This allows the Config Helper to trigger immediate configuration reloading and real-time operations without requiring a daemon restart.
 
 3. Run the dev server:
 

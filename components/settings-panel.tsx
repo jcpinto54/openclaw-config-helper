@@ -11,7 +11,7 @@ export function SettingsPanel({
 }: {
   settings: AppSettings;
   connection: {
-    mode: string;
+    accessMode: string;
     sshHost: string | null;
     sshUser: string | null;
     hasGatewayToken: boolean;
@@ -24,19 +24,21 @@ export function SettingsPanel({
   return (
     <div className="space-y-6">
       <Panel>
-        <h3 className="text-lg font-semibold text-slate-950">Runtime connection</h3>
+        <h3 className="text-lg font-semibold text-[var(--brand-text-primary)]">Runtime connection</h3>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <div className="rounded-xl bg-slate-100 p-4 text-sm">
-            <p className="text-slate-500">Mode</p>
-            <p className="mt-1 font-semibold text-slate-950">{connection.mode}</p>
+          <div className="rounded-xl bg-[var(--brand-surface-muted)] p-4 text-sm">
+            <p className="text-[var(--brand-text-muted)]">File access mode</p>
+            <p className="mt-1 font-semibold text-[var(--brand-text-primary)]">{connection.accessMode}</p>
           </div>
-          <div className="rounded-xl bg-slate-100 p-4 text-sm">
-            <p className="text-slate-500">SSH host</p>
-            <p className="mt-1 font-semibold text-slate-950">{connection.sshHost ?? "Not set"}</p>
+          <div className="rounded-xl bg-[var(--brand-surface-muted)] p-4 text-sm">
+            <p className="text-[var(--brand-text-muted)]">SSH host</p>
+            <p className="mt-1 font-semibold text-[var(--brand-text-primary)]">
+              {connection.sshHost ?? "Not set"}
+            </p>
           </div>
-          <div className="rounded-xl bg-slate-100 p-4 text-sm">
-            <p className="text-slate-500">Gateway token</p>
-            <p className="mt-1 font-semibold text-slate-950">
+          <div className="rounded-xl bg-[var(--brand-surface-muted)] p-4 text-sm">
+            <p className="text-[var(--brand-text-muted)]">Gateway token</p>
+            <p className="mt-1 font-semibold text-[var(--brand-text-primary)]">
               {connection.hasGatewayToken ? "Present" : "Not set"}
             </p>
           </div>
@@ -44,10 +46,12 @@ export function SettingsPanel({
       </Panel>
 
       <Panel>
-        <h3 className="text-lg font-semibold text-slate-950">App preferences</h3>
+        <h3 className="text-lg font-semibold text-[var(--brand-text-primary)]">App preferences</h3>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <label>
-            <span className="mb-2 block text-sm font-medium text-slate-700">Refresh frequency</span>
+            <span className="mb-2 block text-sm font-medium text-[var(--brand-text-secondary)]">
+              Refresh frequency
+            </span>
             <select
               value={form.refreshFrequency}
               onChange={(event) =>
@@ -56,7 +60,7 @@ export function SettingsPanel({
                   refreshFrequency: event.target.value,
                 }))
               }
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-[var(--brand-border)] bg-[var(--brand-surface-strong)] px-3 py-2 text-sm text-[var(--brand-text-primary)]"
             >
               <option value="24h">Every 24 hours</option>
               <option value="12h">Every 12 hours</option>
@@ -64,7 +68,9 @@ export function SettingsPanel({
             </select>
           </label>
           <label>
-            <span className="mb-2 block text-sm font-medium text-slate-700">Theme</span>
+            <span className="mb-2 block text-sm font-medium text-[var(--brand-text-secondary)]">
+              Theme
+            </span>
             <select
               value={form.theme}
               onChange={(event) =>
@@ -73,14 +79,14 @@ export function SettingsPanel({
                   theme: event.target.value as AppSettings["theme"],
                 }))
               }
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-[var(--brand-border)] bg-[var(--brand-surface-strong)] px-3 py-2 text-sm text-[var(--brand-text-primary)]"
             >
               <option value="system">System</option>
               <option value="light">Light</option>
               <option value="dark">Dark</option>
             </select>
           </label>
-          <label className="flex items-end gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <label className="flex items-end gap-3 rounded-xl border border-[var(--brand-border)] bg-[var(--brand-surface-muted)] px-4 py-3">
             <input
               checked={form.notifyOnCritical}
               onChange={(event) =>
@@ -92,7 +98,9 @@ export function SettingsPanel({
               type="checkbox"
               className="size-4"
             />
-            <span className="text-sm font-medium text-slate-700">Notify on critical findings</span>
+            <span className="text-sm font-medium text-[var(--brand-text-secondary)]">
+              Notify on critical findings
+            </span>
           </label>
         </div>
 
@@ -100,7 +108,7 @@ export function SettingsPanel({
           <button
             type="button"
             disabled={saving}
-            className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white disabled:bg-slate-300"
+            className="rounded-xl bg-[var(--brand-coral)] px-4 py-3 text-sm font-semibold text-white disabled:bg-[var(--brand-surface-muted)]"
             onClick={async () => {
               setSaving(true);
               setMessage(null);
@@ -124,7 +132,7 @@ export function SettingsPanel({
           >
             {saving ? "Saving..." : "Save Settings"}
           </button>
-          {message ? <p className="text-sm text-slate-600">{message}</p> : null}
+          {message ? <p className="text-sm text-[var(--brand-text-secondary)]">{message}</p> : null}
         </div>
       </Panel>
     </div>

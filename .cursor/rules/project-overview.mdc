@@ -1,0 +1,29 @@
+---
+description: 
+alwaysApply: true
+---
+
+# OpenClaw Config Helper Overview
+
+- This project is a local-first Next.js web app for managing OpenClaw deployments on a VPS.
+- The app centralizes config inspection, security audit workflows, credential hygiene, and agent-driven suggestions behind one UI.
+- Assume the control plane is intended for private access only; prefer secure defaults and avoid changes that weaken auth, transport, or secret handling.
+
+# Architecture
+
+- `app/` contains App Router pages and thin API routes.
+- `components/` contains UI panels and shared presentation components.
+- `lib/` contains the real domain logic and integrations; prefer putting behavior here instead of in routes or UI components.
+- `lib/openclaw.ts` is the central integration layer for loading, explaining, and patching OpenClaw config.
+- `lib/gateway-bridge.ts` handles live WebSocket JSON-RPC calls to the OpenClaw gateway.
+- `lib/ssh-bridge.ts` and `lib/runtime-store.ts` handle remote vs local file access.
+- `lib/db.ts` stores local UI state in SQLite; do not treat it as the source of truth for live OpenClaw config.
+
+# Working Conventions
+
+- Keep API routes thin: validate input, call `lib/` functions, and return JSON.
+- Keep variable names descriptive and explicit; avoid single-letter names.
+- Prefer edits that preserve support for the configured access modes: `mock`, `local`, and `ssh`.
+- Be careful with anything touching `.env`, SSH credentials, gateway tokens, secrets, or remote file writes.
+- When changing config behavior, preserve the distinction between safe gateway patch operations and direct file persistence.
+- When documenting or explaining behavior, use `README.md` for user-facing setup and `docs/ARCHITECTURE.md` for system design and data flows.

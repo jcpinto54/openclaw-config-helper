@@ -2,6 +2,24 @@
 
 :root {
   color-scheme: light;
+  --brand-background: #f0f4ff;
+  --brand-surface: rgba(255, 255, 255, 0.88);
+  --brand-surface-strong: #ffffff;
+  --brand-surface-muted: #e8edf9;
+  --brand-border: rgba(15, 23, 42, 0.16);
+  --brand-border-strong: rgba(239, 75, 88, 0.26);
+  --brand-text-primary: #0b1220;
+  --brand-text-secondary: #40506d;
+  --brand-text-muted: #69758c;
+  --brand-coral: #ef4b58;
+  --brand-coral-strong: #c93342;
+  --brand-coral-soft: #ffe5e8;
+  --brand-cyan: #008f87;
+  --brand-cyan-strong: #006f69;
+  --brand-cyan-soft: #ddf6f3;
+  --brand-code-surface: #050810;
+  --brand-code-text: #f0f4ff;
+  --brand-shadow: 0 18px 48px rgba(11, 18, 32, 0.08);
 }
 
 * {
@@ -23,12 +41,16 @@ body {
 }
 
 body {
-  color: #0f172a;
-  background: #f1f5f9;
+  color: var(--brand-text-primary);
+  background:
+    radial-gradient(circle at top left, rgba(0, 229, 204, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(239, 75, 88, 0.12), transparent 24%),
+    var(--brand-background);
 }
 
 a {
   text-decoration: none;
+  color: inherit;
 }
 
 button,

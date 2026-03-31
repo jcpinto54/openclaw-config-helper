@@ -59,8 +59,8 @@ export function SuggestionsPanel({
       <Panel>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-slate-950">Suggestions feed</h3>
-            <p className="text-sm text-slate-600">
+            <h3 className="text-lg font-semibold text-[var(--brand-text-primary)]">Suggestions feed</h3>
+            <p className="text-sm text-[var(--brand-text-secondary)]">
               Last refreshed at {new Date(timestamp).toLocaleString()}.
             </p>
           </div>
@@ -72,8 +72,8 @@ export function SuggestionsPanel({
                 onClick={() => setFilter(entry.value)}
                 className={`rounded-full px-3 py-2 text-sm font-semibold ${
                   filter === entry.value
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    ? "bg-[var(--brand-coral)] text-white"
+                    : "bg-[var(--brand-surface-muted)] text-[var(--brand-text-secondary)] hover:bg-[var(--brand-cyan-soft)]"
                 }`}
               >
                 {entry.label}
@@ -81,7 +81,7 @@ export function SuggestionsPanel({
             ))}
             <button
               type="button"
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+              className="rounded-xl bg-[var(--brand-coral)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-coral-strong)]"
               onClick={async () => {
                 setBusyId("refresh");
                 setMessage(null);
@@ -100,7 +100,7 @@ export function SuggestionsPanel({
             </button>
           </div>
         </div>
-        {message ? <p className="mt-3 text-sm text-slate-600">{message}</p> : null}
+        {message ? <p className="mt-3 text-sm text-[var(--brand-text-secondary)]">{message}</p> : null}
       </Panel>
 
       <div className="grid gap-4">
@@ -109,22 +109,24 @@ export function SuggestionsPanel({
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="text-lg font-semibold text-slate-950">{suggestion.title}</h3>
+                  <h3 className="text-lg font-semibold text-[var(--brand-text-primary)]">
+                    {suggestion.title}
+                  </h3>
                   <StatusBadge status={suggestion.status} />
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase text-slate-600">
+                  <span className="rounded-full bg-[var(--brand-surface-muted)] px-2.5 py-1 text-xs font-semibold uppercase text-[var(--brand-text-secondary)]">
                     {suggestion.category}
                   </span>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase text-slate-600">
+                  <span className="rounded-full bg-[var(--brand-surface-muted)] px-2.5 py-1 text-xs font-semibold uppercase text-[var(--brand-text-secondary)]">
                     {suggestion.complexity}
                   </span>
                 </div>
-                <p className="text-sm text-slate-600">{suggestion.why_relevant}</p>
+                <p className="text-sm text-[var(--brand-text-secondary)]">{suggestion.why_relevant}</p>
                 {suggestion.source_url ? (
                   <a
                     href={suggestion.source_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex text-sm font-medium text-sky-700 hover:text-sky-900"
+                    className="inline-flex text-sm font-medium text-[var(--brand-coral)] hover:text-[var(--brand-cyan)]"
                   >
                     Source
                   </a>
@@ -133,7 +135,7 @@ export function SuggestionsPanel({
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                  className="rounded-lg bg-[var(--brand-cyan)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-cyan-strong)]"
                   onClick={() => {
                     setMessage(null);
                     setReviewingId(suggestion.id);
@@ -143,7 +145,7 @@ export function SuggestionsPanel({
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                  className="rounded-lg border border-[var(--brand-border)] px-3 py-2 text-sm font-semibold text-[var(--brand-text-secondary)] hover:bg-[var(--brand-surface-muted)]"
                   onClick={async () => {
                     setBusyId(`save-${suggestion.id}`);
                     setMessage(null);
@@ -162,7 +164,7 @@ export function SuggestionsPanel({
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                  className="rounded-lg border border-[var(--brand-border)] px-3 py-2 text-sm font-semibold text-[var(--brand-text-secondary)] hover:bg-[var(--brand-surface-muted)]"
                   onClick={async () => {
                     setBusyId(`dismiss-${suggestion.id}`);
                     setMessage(null);
@@ -186,10 +188,10 @@ export function SuggestionsPanel({
       </div>
 
       <Panel>
-        <h3 className="text-lg font-semibold text-slate-950">Recent history</h3>
+        <h3 className="text-lg font-semibold text-[var(--brand-text-primary)]">Recent history</h3>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="text-slate-500">
+            <thead className="text-[var(--brand-text-muted)]">
               <tr>
                 <th className="pb-2 pr-4 font-medium">When</th>
                 <th className="pb-2 pr-4 font-medium">Suggestion</th>
@@ -200,17 +202,19 @@ export function SuggestionsPanel({
             <tbody>
               {history.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="py-4 text-slate-500">
+                  <td colSpan={4} className="py-4 text-[var(--brand-text-muted)]">
                     No suggestion activity yet.
                   </td>
                 </tr>
               ) : (
                 history.map((entry) => (
-                  <tr key={entry.id} className="border-t border-slate-100">
-                    <td className="py-3 pr-4 text-slate-500">
+                  <tr key={entry.id} className="border-t border-[var(--brand-border)]">
+                    <td className="py-3 pr-4 text-[var(--brand-text-muted)]">
                       {new Date(entry.createdAt).toLocaleString()}
                     </td>
-                    <td className="py-3 pr-4 font-medium text-slate-900">{entry.title}</td>
+                    <td className="py-3 pr-4 font-medium text-[var(--brand-text-primary)]">
+                      {entry.title}
+                    </td>
                     <td className="py-3 pr-4">
                       <StatusBadge
                         status={
@@ -218,7 +222,7 @@ export function SuggestionsPanel({
                         }
                       />
                     </td>
-                    <td className="py-3 text-slate-600">{entry.action}</td>
+                    <td className="py-3 text-[var(--brand-text-secondary)]">{entry.action}</td>
                   </tr>
                 ))
               )}
