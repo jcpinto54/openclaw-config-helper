@@ -47,6 +47,51 @@ flowchart TD
     Creds --> OpenClaw
 ```
 
+## Deployment Control Flow (GitHub Actions + Tailnet)
+
+Production deployments are automated through GitHub Actions and run over Tailscale rather than public internet ingress. The workflow joins the tailnet with a temporary CI identity and then executes the deploy script over SSH on the VPS.
+
+```mermaid
+flowchart TD
+    subgraph GitHubCloud [GitHub Actions]
+        Runner[EphemeralRunner]
+        Workflow[deploy.yml]
+    end
+
+    subgraph Tailnet [TailscaleNetwork]
+        TSAuth[TailscaleOAuth]
+        TagCI[tag:ciIdentity]
+    end
+
+    subgraph VPSHost [OpenClawVPS]
+        DeployUser[deployUserSSH]
+        DeployScript[scripts/deploy.sh]
+        Runtime[AppRuntime]
+    end
+
+    Workflow --> Runner
+    Runner --> TSAuth
+    TSAuth --> TagCI
+    TagCI -->|SSHOverTailnet| DeployUser
+    DeployUser --> DeployScript
+    DeployScript -->|gitFetch+npmCi+build| Runtime
+```
+
+### Deployment Sequence
+
+1. Push to `main` triggers `.github/workflows/deploy.yml`.
+2. Action runner joins tailnet using `tailscale/github-action` with OAuth credentials and `tag:ci`.
+3. Runner verifies VPS reachability (`tailscale ping`) and opens SSH with strict host key checking.
+4. Runner executes `scripts/deploy.sh <github.sha>` on the VPS.
+5. Deploy script checks out exact commit, installs dependencies, builds, optionally restarts runtime, and optionally runs a health check.
+
+### Trust Boundaries and Secrets
+
+- GitHub stores `TS_OAUTH_*`, SSH key material, and host key pin as encrypted secrets.
+- Ephemeral CI tailnet identity is constrained by ACLs (recommended: only SSH access to deploy target).
+- VPS execution happens as a least-privilege deploy user, not root.
+- Deployment script is idempotent and exits non-zero on failure so CI can block broken deploys.
+
 
 
 ## Directory Structure

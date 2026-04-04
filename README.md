@@ -70,6 +70,77 @@ Detailed behavior and data flows are described in [`project-spec.md`](./project-
 - Use SSH keys and least-privilege access to the VPS; never commit real credentials or `.env`.
 - For production, run behind HTTPS and your preferred auth boundary (reverse proxy, VPN, etc.).
 
+## Automated deployment (GitHub + Tailscale)
+
+This repository includes a production deploy workflow at `.github/workflows/deploy.yml` that runs on each push to `main` (and supports manual runs with `workflow_dispatch`).
+
+### How it works
+
+1. GitHub Actions starts an ephemeral runner.
+2. The job joins your tailnet using `tailscale/github-action`.
+3. The job opens a strict-host-checked SSH connection to your VPS over tailnet.
+4. The job runs `scripts/deploy.sh <commit-sha>` on the VPS so the server deploys the exact pushed commit.
+
+### Required GitHub secrets
+
+- `TS_OAUTH_CLIENT_ID`: Tailscale OAuth client ID for CI.
+- `TS_OAUTH_SECRET`: Tailscale OAuth secret for CI.
+- `DEPLOY_HOST`: VPS Tailnet hostname or Tailnet IP (for example `vps-name.tail123.ts.net`).
+- `DEPLOY_USER`: SSH deploy user on the VPS.
+- `DEPLOY_SSH_KEY`: Private key used by GitHub Actions to SSH into the VPS.
+- `DEPLOY_SSH_KNOWN_HOSTS`: Pinned SSH host key entry for strict host checking.
+
+### Optional GitHub repository variables
+
+- `DEPLOY_PORT`: SSH port (default `22`).
+- `DEPLOY_APP_DIR`: App path on VPS (default `/opt/openclaw-config-helper`).
+- `DEPLOY_BRANCH`: Branch metadata for logs (default `main`).
+- `DEPLOY_RESTART_COMMAND`: Runtime restart command (empty by default).
+- `DEPLOY_HEALTH_CHECK_COMMAND`: Post-restart health check command (empty by default).
+
+### VPS bootstrap checklist
+
+1. Create a dedicated non-root deploy user (for example `deploy`).
+2. Clone this repository to `/opt/openclaw-config-helper` (or set `DEPLOY_APP_DIR` accordingly).
+3. Ensure Node.js + npm are available for `npm ci` and `npm run build`.
+4. Ensure the deploy user can run your chosen restart command.
+5. Add the corresponding public key for `DEPLOY_SSH_KEY` to `~/.ssh/authorized_keys` on the VPS.
+6. Capture host key for `DEPLOY_SSH_KNOWN_HOSTS` (from a trusted machine), for example:
+   ```bash
+   ssh-keyscan -p 22 vps-name.tail123.ts.net
+   ```
+
+### Minimal Tailscale ACL model
+
+- Tag your workflow identity with `tag:ci`.
+- Allow `tag:ci` to access only the deploy target on SSH.
+- Deny broad lateral access from CI identities.
+
+### Manual dry-run on VPS
+
+From the VPS (or SSH session with deploy user), run:
+
+```bash
+cd /opt/openclaw-config-helper
+DEPLOY_RESTART_COMMAND="sudo systemctl restart openclaw-config-helper" \
+DEPLOY_HEALTH_CHECK_COMMAND="curl --fail http://127.0.0.1:3000/" \
+bash ./scripts/deploy.sh <commit-sha>
+```
+
+### Troubleshooting
+
+- `tailscale ping` fails in workflow:
+  - Verify OAuth credentials are valid and allowed to create tagged ephemeral nodes.
+  - Verify ACLs allow `tag:ci` to reach the VPS.
+- SSH host key mismatch:
+  - Refresh `DEPLOY_SSH_KNOWN_HOSTS` from a trusted machine if host keys changed intentionally.
+- Restart command fails:
+  - Confirm deploy user permissions (for example `sudoers` rules for `systemctl`).
+- Health check fails:
+  - Verify app boot time and endpoint path; adjust `DEPLOY_HEALTH_CHECK_COMMAND`.
+- Workflow missing secrets:
+  - Check repository or environment secret names exactly match README/workflow keys.
+
 ## License
 
 ISC (see [`package.json`](./package.json)).

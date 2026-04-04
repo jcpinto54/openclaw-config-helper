@@ -1,0 +1,100 @@
+name: Deploy to VPS (Tailnet)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy production
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+      DEPLOY_APP_DIR: ${{ vars.DEPLOY_APP_DIR || '/opt/openclaw-config-helper' }}
+      DEPLOY_RESTART_COMMAND: ${{ vars.DEPLOY_RESTART_COMMAND || '' }}
+      DEPLOY_HEALTH_CHECK_COMMAND: ${{ vars.DEPLOY_HEALTH_CHECK_COMMAND || '' }}
+      DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH || 'main' }}
+    steps:
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          required_variables=(
+            "DEPLOY_HOST"
+            "DEPLOY_USER"
+          )
+          for required_variable_name in "${required_variables[@]}"; do
+            if [ -z "${!required_variable_name}" ]; then
+              echo "Missing required value: ${required_variable_name}"
+              exit 1
+            fi
+          done
+          if [ -z "${{ secrets.DEPLOY_SSH_KEY }}" ]; then
+            echo "Missing required secret: DEPLOY_SSH_KEY"
+            exit 1
+          fi
+          if [ -z "${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}" ]; then
+            echo "Missing required secret: DEPLOY_SSH_KNOWN_HOSTS"
+            exit 1
+          fi
+          if [ -z "${{ secrets.TS_OAUTH_CLIENT_ID }}" ] || [ -z "${{ secrets.TS_OAUTH_SECRET }}" ]; then
+            echo "Missing required Tailscale OAuth secrets."
+            exit 1
+          fi
+
+      - name: Join tailnet
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Verify VPS is reachable over tailnet
+        shell: bash
+        run: |
+          set -euo pipefail
+          tailscale ping --timeout=15s "${DEPLOY_HOST}"
+
+      - name: Configure SSH client
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy commit on VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+          escaped_deploy_app_dir="$(printf '%q' "${DEPLOY_APP_DIR}")"
+          escaped_deploy_branch="$(printf '%q' "${DEPLOY_BRANCH}")"
+          escaped_restart_command="$(printf '%q' "${DEPLOY_RESTART_COMMAND}")"
+          escaped_health_check_command="$(printf '%q' "${DEPLOY_HEALTH_CHECK_COMMAND}")"
+          escaped_commit_sha="$(printf '%q' "${{ github.sha }}")"
+          ssh \
+            -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile=~/.ssh/known_hosts \
+            -p "${DEPLOY_PORT}" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "DEPLOY_APP_DIR=${escaped_deploy_app_dir} \
+            DEPLOY_BRANCH=${escaped_deploy_branch} \
+            DEPLOY_RESTART_COMMAND=${escaped_restart_command} \
+            DEPLOY_HEALTH_CHECK_COMMAND=${escaped_health_check_command} \
+            bash ${escaped_deploy_app_dir}/scripts/deploy.sh ${escaped_commit_sha}"
